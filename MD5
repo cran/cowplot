@@ -1,10 +1,10 @@
-02e094868ba6ee507f5f186633f5f01e *DESCRIPTION
+af15d117a78dd3cfc7c8f1a3b862eb6c *DESCRIPTION
 87f97c00735fa0fdf6c1192e077a62fa *NAMESPACE
-17ece3d520fbbc9310e83d95501c175d *NEWS
+460e5b650bccc2ac0b595a3f1fd1387b *NEWS
 f7cd4098684876ead50f4cbdf23dce41 *R/cowplot.R
-def27ce2f9de45e221267016d9c25c7c *README.md
+9950ba89645b9dcebcb8c842a8d623f7 *README.md
 a520f3cd297a4196daf9af5ca294b27f *TODO
-68cfc9ae2e5bcc35b0f441e42b970320 *build/vignette.rds
+a7256bf3bc1865dba1afeeccf7f59505 *build/vignette.rds
 fc7588b441fa5751674292b2ad5fde38 *inst/doc/introduction.R
 77ac9787e905de9548687725db72996d *inst/doc/introduction.Rmd
 7212d6f95b0a5859e6d307b8135f9238 *inst/doc/introduction.html
@@ -21,4 +21,4 @@ c054e236f8233dc31aaa86b4e66970ec *man/plot_grid.Rd
 5d356680e273af61eec1f5b242ea49cb *man/save_plot.Rd
 a767361e06f0ecebd0be3790fe54f168 *man/theme_cowplot.Rd
 01ed778461f4c18138cb338f3e24a518 *man/theme_nothing.Rd
-77ac9787e905de9548687725db72996d *vignettes/introduction.Rmd
+07ab6e32c9218a8e1e2293d529fdc97b *vignettes/introduction.Rmd

@@ -7,6 +7,10 @@ The package also fixes a couple of other annoyances that I encountered when tryi
 
 # Installation
 
+This package is available on CRAN [here](http://cran.r-project.org/web/packages/cowplot/index.html) and can be installed via
+
+    install.packages("cowplot")
+
 You can install the latest development version of this package using the devtools package. In your R console, simply enter:
 
     devtools::install_github("wilkelab/cowplot")
@@ -16,5 +20,5 @@ Note that cowplot is in the early stages of development. While you may find it u
 # Usage
 
 To get a quick introduction to the main features of this package, read the 
-[vignette available here.](http://htmlpreview.github.io/?https://github.com/wilkelab/cowplot/blob/master/inst/doc/introduction.html)  
+[vignette available here.](http://cran.r-project.org/web/packages/cowplot/vignettes/introduction.html)  
 
