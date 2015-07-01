@@ -6,10 +6,10 @@
 # ****** Internal functions used by drawing code ******
 ggplot_to_gtable <- function(plot)
 {
-  if (is(plot, "ggplot")){
+  if (methods::is(plot, "ggplot")){
     ggplot2::ggplotGrob(plot)
   }
-  else if (is(plot, "gtable")){
+  else if (methods::is(plot, "gtable")){
     plot
   }
   else{
@@ -34,11 +34,11 @@ draw_line <- function(x, y, ...){
 
 #' Draw text.
 #'
-#' This is a convenience function. It's just a thin wrapper around \code{geom_text()}. It can take either an
-#' individual piece of text to be drawn or a vector of separate text labels, with associated coordinates.
+#' This is a convenience function to plot multiple pieces of text at the same time. It cannot
+#' handle mathematical expressions, though. For those, use \code{draw_label}.
 #'
 #' Note that font sizes get scaled by a factor of 2.85, so sizes given here agree with font sizes used in
-#' the theme. This is different from geom_text in ggplot2.
+#' the theme. This is different from \code{geom_text} in ggplot2.
 #'
 #' By default, the x and y coordinates specify the center of the text box. Set \code{hjust = 0, vjust = 0} to specify
 #' the lower left corner, and other values of \code{hjust} and \code{vjust} for any other relative location you want to
@@ -56,13 +56,64 @@ draw_text <- function(text, x = 0.5, y = 0.5, size = 14, ...){
             ...)
 }
 
+
+#' Draw a text label or mathematical expression.
+#'
+#' This function can draw either a character string or mathematical expression at the given
+#' coordinates. It works both on top of \code{ggdraw} and directly with \code{ggplot}, depending
+#' on which coordinate system is desired (see examples).
+#'
+#' By default, the x and y coordinates specify the center of the text box. Set \code{hjust = 0, vjust = 0} to specify
+#' the lower left corner, and other values of \code{hjust} and \code{vjust} for any other relative location you want to
+#' specify.
+#' @param label String or plotmath expression to be drawn.
+#' @param x The x location of the label.
+#' @param y The y location of the label.
+#' @param hjust Horizontal justification
+#' @param vjust Vertical justification
+#' @param fontfamily The font family
+#' @param fontface The font face ("plain", "bold", etc.)
+#' @param colour Text color
+#' @param size Point size of text
+#' @param angle Angle at which text is drawn
+#' @param lineheight Line height of text
+#' @param alpha The alpha value of the text
+#' @examples
+#' p <- ggplot(mtcars, aes(mpg, disp)) + geom_line(colour = "blue") + background_grid(minor='none')
+#' c <- cor.test(mtcars$mpg, mtcars$disp, method='sp')
+#' label <- substitute(paste("Spearman ", rho, " = ", estimate, ", P = ", pvalue),
+#'                     list(estimate = signif(c$estimate, 2), pvalue = signif(c$p.value, 2)))
+#' # adding label via ggdraw, in the ggdraw coordinates
+#' ggdraw(p) + draw_label(label, .7, .9)
+#' # adding label directly to plot, in the data coordinates
+#' p + draw_label(label, 20, 400, hjust = 0, vjust = 0)
+#' @export
+draw_label <- function(label, x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5,
+                    fontfamily = "", fontface = "plain", colour = "black", size = 14,
+                    angle = 0, lineheight = 0.9, alpha = 1)
+{
+  text_par <- grid::gpar(col = colour,
+                         fontsize = size,
+                         fontfamily = fontfamily,
+                         fontface = fontface,
+                         lineheight = lineheight,
+                         alpha = alpha)
+
+  # render the label
+  text.grob <- grid::textGrob(label, x = grid::unit(0.5, "npc"), y = grid::unit(0.5, "npc"),
+                             hjust = hjust, vjust = vjust, rot = angle, gp = text_par)
+  annotation_custom(text.grob, xmin = x, xmax = x, ymin = y, ymax = y)
+}
+
+
 #' Draw plot label
 #'
 #' This function adds a plot label to the upper left corner of a graph. It takes all the same parameters
-#' as \code{draw_text()}, but has defaults that make it convenient to label graphs.
-#' @param label String to be drawn as the label.
-#' @param x The x position of the label.
-#' @param y The y position of the label.
+#' as \code{draw_text()}, but has defaults that make it convenient to label graphs. Just like \code{draw_text()},
+#' it can handle vectors of labels with associated coordinates.
+#' @param label String (or vector of strings) to be drawn as the label.
+#' @param x The x position (or vector thereof) of the label(s).
+#' @param y The y position (or vector thereof) of the label(s).
 #' @param hjust Horizontal adjustment.
 #' @param vjust Vertical adjustment.
 #' @param size Font size of the label to be drawn.
