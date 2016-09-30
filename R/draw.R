@@ -7,7 +7,12 @@
 ggplot_to_gtable <- function(plot)
 {
   if (methods::is(plot, "ggplot")){
-    ggplot2::ggplotGrob(plot)
+    # ggplotGrob must open a device and when a multiple page capable device (e.g. PDF) is open this will save a blank page
+    # in order to avoid saving this blank page to the final target device a NULL device is opened and closed here to *absorb* the blank plot
+    grDevices::pdf(NULL)
+    plot <- ggplot2::ggplotGrob(plot)
+    grDevices::dev.off()
+    plot
   }
   else if (methods::is(plot, "gtable")){
     plot
@@ -219,12 +224,15 @@ draw_grob <- function(grob, x = 0, y = 0, width = 1, height = 1){
 
 #' Set up a drawing layer on top of a ggplot
 #' @param plot The plot to use as a starting point. Can be either a ggplot2 plot or an arbitrary gtable.
+#' @param xlim The x-axis limits for the drawing layer (default is [0, 1]).
+#' @param ylim The y-axis limits for the drawing layer (default is [0, 1]).
 #' @export
-ggdraw <- function(plot = NULL){
+ggdraw <- function(plot = NULL, xlim = c(0, 1), ylim = c(0, 1)) {
+
   d <- data.frame(x=0:1, y=0:1) # dummy data
   p <- ggplot(d, aes_string(x="x", y="y")) + # empty plot
-    scale_x_continuous(limits = c(0, 1), expand = c(0, 0)) +
-    scale_y_continuous(limits = c(0, 1), expand = c(0, 0)) +
+    scale_x_continuous(limits = xlim, expand = c(0, 0)) +
+    scale_y_continuous(limits = ylim, expand = c(0, 0)) +
     theme_nothing() + # with empty theme
     labs(x=NULL, y=NULL) # and absolutely no axes
 
