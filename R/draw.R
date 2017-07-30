@@ -4,13 +4,29 @@
 
 
 # ****** Internal functions used by drawing code ******
-ggplot_to_gtable <- function(plot)
-{
-  if (methods::is(plot, "ggplot")){
+plot_to_gtable <- function(plot){
+  if (methods::is(plot, "function") || methods::is(plot, "recordedplot")){
+    if (!requireNamespace("gridGraphics", quietly = TRUE)){
+      warning("Package `gridGraphics` is required to handle base-R plots. Substituting empty plot.", call. = FALSE)
+      u <- grid::unit(1, "null")
+      gt <- gtable::gtable_col(NULL, list(grid::nullGrob()), u, u)
+      # fix gtable clip setting
+      gt$layout$clip <- "inherit"
+      gt
+    }
+    else {
+      tree <- grid::grid.grabExpr(gridGraphics::grid.echo(plot))
+      u <- grid::unit(1, "null")
+      gt <- gtable::gtable_col(NULL, list(tree), u, u)
+      # fix gtable clip setting
+      gt$layout$clip <- "inherit"
+      gt
+    }
+  }
+  else if (methods::is(plot, "ggplot")){
     # ggplotGrob must open a device and when a multiple page capable device (e.g. PDF) is open this will save a blank page
     # in order to avoid saving this blank page to the final target device a NULL device is opened and closed here to *absorb* the blank plot
 
-    # commenting this out to see if it was the cause of
     grDevices::pdf(NULL)
     plot <- ggplot2::ggplotGrob(plot)
     grDevices::dev.off()
@@ -20,7 +36,10 @@ ggplot_to_gtable <- function(plot)
     plot
   }
   else{
-    stop('Argument needs to be of class "ggplot" or "gtable"' )
+    stop(
+      'Argument needs to be of class "ggplot", "gtable", "recordedplot", ',
+      'or a function that plots to an R graphics device when called, ',
+      'but is a ', class(plot))
   }
 }
 
@@ -125,10 +144,22 @@ draw_label <- function(label, x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5,
 #' @param vjust Vertical adjustment.
 #' @param size Font size of the label to be drawn.
 #' @param fontface Font face of the label to be drawn.
+#' @param family (optional) Font family of the plot labels. If not provided, is taken from the current theme.
+#' @param colour (optional) Color of the plot labels. If not provided, is taken from the current theme.
 #' @param ... Other arguments to be handed to \code{draw_text}.
 #' @export
-draw_plot_label <- function(label, x=0, y=1, hjust = -0.5, vjust = 1.5, size = 16, fontface = 'bold', ...){
-  draw_text(text = label, x = x, y = y, hjust = hjust, vjust = vjust, size = size, fontface = fontface, ...)
+draw_plot_label <- function(label, x=0, y=1, hjust = -0.5, vjust = 1.5, size = 16, fontface = 'bold',
+                            family = NULL, colour = NULL, ...){
+  if (is.null(family)) {
+    family <- theme_get()$text$family
+  }
+
+  if (is.null(colour)) {
+    colour <- theme_get()$text$colour
+  }
+
+  draw_text(text = label, x = x, y = y, hjust = hjust, vjust = vjust, size = size, fontface = fontface,
+            family = family, colour = colour, ...)
 }
 
 
@@ -167,7 +198,7 @@ draw_plot_label <- function(label, x=0, y=1, hjust = -0.5, vjust = 1.5, size = 1
 #' # Labeling an individual plot
 #' ggdraw(p2) + draw_figure_label(label = "Figure 1", position = "bottom.right", size = 10)
 #'
-#' @author Ulrik Stervbo (ulrik.stervbo [AT] gmail.com)
+#' @author Ulrik Stervbo (ulrik.stervbo @ gmail.com)
 #' @export
 draw_figure_label <- function(label, position = c("top.left", "top", "top.right", "bottom.left", "bottom", "bottom.right"), size, fontface, ...){
   # Get the position
@@ -196,16 +227,18 @@ draw_figure_label <- function(label, position = c("top.left", "top", "top.right"
 #'
 #' Places a plot somewhere onto the drawing canvas. By default, coordinates run from
 #' 0 to 1, and the point (0, 0) is in the lower left corner of the canvas.
-#' @param plot The plot to place. Can be either a ggplot2 plot or an arbitrary gtable.
+#' @param plot The plot to place. Can be a ggplot2 plot, an arbitrary gtable,
+#'   or a recorded base-R plot, as in [plot_grid()].
 #' @param x The x location of the lower left corner of the plot.
 #' @param y The y location of the lower left corner of the plot.
 #' @param width Width of the plot.
 #' @param height Height of the plot.
+#' @param scale Scales the grob relative to the rectangle defined by `x`, `y`, `width`, `height`. A setting
+#'   of `scale = 1` indicates no scaling.
 #' @export
-draw_plot <- function(plot, x = 0, y = 0, width = 1, height = 1){
-  g <- ggplot_to_gtable(plot) # convert to gtable if necessary
-  plot.grob <- grid::grobTree(g)
-  annotation_custom(plot.grob, xmin = x, xmax = x+width, ymin = y, ymax = y+height)
+draw_plot <- function(plot, x = 0, y = 0, width = 1, height = 1, scale = 1){
+  g <- plot_to_gtable(plot) # convert to gtable if necessary
+  draw_grob(g, x, y, width, height, scale)
 }
 
 #' Draw a grob.
@@ -217,17 +250,81 @@ draw_plot <- function(plot, x = 0, y = 0, width = 1, height = 1){
 #' @param y The y location of the lower left corner of the grob.
 #' @param width Width of the grob.
 #' @param height Height of the grob.
+#' @param scale Scales the grob relative to the rectangle defined by `x`, `y`, `width`, `height`. A setting
+#'   of `scale = 1` indicates no scaling.
+#' @param clip Set to "on" to clip the grob or "inherit" to not clip. Note that clipping doesn't always work as
+#'   expected, due to limitations of the grid graphics system.
 #' @export
-draw_grob <- function(grob, x = 0, y = 0, width = 1, height = 1){
-  annotation_custom(grid::grobTree(grob), xmin = x, xmax = x+width, ymin = y, ymax = y+height)
+draw_grob <- function(grob, x = 0, y = 0, width = 1, height = 1, scale = 1, clip = "inherit"){
+  layer(
+    data = data.frame(x = NA),
+    stat = StatIdentity,
+    position = PositionIdentity,
+    geom = GeomDrawGrob,
+    inherit.aes = FALSE,
+    params = list(
+      grob = grob,
+      xmin = x,
+      xmax = x + width,
+      ymin = y,
+      ymax = y + height,
+      scale = scale,
+      clip = clip
+    )
+  )
 }
 
+#' @rdname draw_grob
+#' @format NULL
+#' @usage NULL
+#' @importFrom ggplot2 ggproto GeomCustomAnn
+#' @export
+GeomDrawGrob <- ggproto("GeomDrawGrob", GeomCustomAnn,
+  draw_panel = function(self, data, panel_params, coord, grob, xmin, xmax, ymin, ymax, scale = 1, clip = "inherit") {
+    if (!inherits(coord, "CoordCartesian")) {
+      stop("draw_grob only works with Cartesian coordinates",
+           call. = FALSE)
+    }
+    corners <- data.frame(x = c(xmin, xmax), y = c(ymin, ymax))
+    data <- coord$transform(corners, panel_params)
+
+    x_rng <- range(data$x, na.rm = TRUE)
+    y_rng <- range(data$y, na.rm = TRUE)
+
+    # set up inner and outer viewport for clipping. Unfortunately,
+    # clipping doesn't work properly most of the time, due to
+    # grid limitations
+    vp_outer <- grid::viewport(x = mean(x_rng), y = mean(y_rng),
+                               width = diff(x_rng), height = diff(y_rng),
+                               just = c("center", "center"),
+                               clip = clip)
+
+    vp_inner <- grid::viewport(width = scale, height = scale,
+                               just = c("center", "center"))
+
+    id <- annotation_id()
+    inner_grob <- grid::grobTree(grob, vp = vp_inner, name = paste(grob$name, id))
+    grid::grobTree(inner_grob, vp = vp_outer, name = paste("GeomDrawGrob", id))
+  }
+)
+
+annotation_id <- local({
+  i <- 1
+  function() {
+    i <<- i + 1
+    i
+  }
+})
 
 
 #' Set up a drawing layer on top of a ggplot
-#' @param plot The plot to use as a starting point. Can be either a ggplot2 plot or an arbitrary gtable.
-#' @param xlim The x-axis limits for the drawing layer (default is [0, 1]).
-#' @param ylim The y-axis limits for the drawing layer (default is [0, 1]).
+#' @param plot The plot to use as a starting point. Can be a ggplot2 plot, an arbitrary gtable,
+#'   or a recorded base-R plot, as in [plot_grid()].
+#' @param xlim The x-axis limits for the drawing layer.
+#' @param ylim The y-axis limits for the drawing layer.
+#' @examples
+#' p <- ggplot(mpg, aes(displ, cty)) + geom_point()
+#' ggdraw(p) + draw_label("Draft", colour = "grey", size = 120, angle = 45)
 #' @export
 ggdraw <- function(plot = NULL, xlim = c(0, 1), ylim = c(0, 1)) {
 
@@ -239,9 +336,7 @@ ggdraw <- function(plot = NULL, xlim = c(0, 1), ylim = c(0, 1)) {
     labs(x=NULL, y=NULL) # and absolutely no axes
 
   if (!is.null(plot)){
-    g <- ggplot_to_gtable(plot) # convert to gtable if necessary
-    plot.grob <- grid::grobTree(g)
-    p <- p + annotation_custom(plot.grob)
+    p <- p + draw_plot(plot)
   }
   p # return ggplot drawing layer
 }

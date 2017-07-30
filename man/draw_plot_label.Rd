@@ -5,7 +5,7 @@
 \title{Add a label to a plot}
 \usage{
 draw_plot_label(label, x = 0, y = 1, hjust = -0.5, vjust = 1.5,
-  size = 16, fontface = "bold", ...)
+  size = 16, fontface = "bold", family = NULL, colour = NULL, ...)
 }
 \arguments{
 \item{label}{String (or vector of strings) to be drawn as the label.}
@@ -22,6 +22,10 @@ draw_plot_label(label, x = 0, y = 1, hjust = -0.5, vjust = 1.5,
 
 \item{fontface}{Font face of the label to be drawn.}
 
+\item{family}{(optional) Font family of the plot labels. If not provided, is taken from the current theme.}
+
+\item{colour}{(optional) Color of the plot labels. If not provided, is taken from the current theme.}
+
 \item{...}{Other arguments to be handed to \code{draw_text}.}
 }
 \description{
@@ -29,4 +33,3 @@ This function adds a plot label to the upper left corner of a graph (or an arbit
 as \code{draw_text}, but has defaults that make it convenient to label graphs with letters A, B, C, etc. Just like \code{draw_text()},
 it can handle vectors of labels with associated coordinates.
 }
-
