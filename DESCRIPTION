@@ -1,6 +1,6 @@
 Package: cowplot
 Title: Streamlined Plot Theme and Plot Annotations for 'ggplot2'
-Version: 0.9.0
+Version: 0.9.1
 Authors@R: c( person("Claus O.", "Wilke", role = c("aut", "cre"), email =
     "wilke@austin.utexas.edu"), person("RStudio", role = c("cph"), comment = "Copyright for ggplot2 code copied to cowplot" ))
 Description: Some helpful extensions and modifications to the 'ggplot2'
@@ -25,9 +25,9 @@ Collate: 'add_sub.R' 'axis_canvas.R' 'cowplot.R' 'draw.R'
         'themes.R' 'utils_ggplot2.R'
 RoxygenNote: 6.0.1
 NeedsCompilation: no
-Packaged: 2017-11-16 05:21:32 UTC; wilke
+Packaged: 2017-11-16 16:30:48 UTC; wilke
 Author: Claus O. Wilke [aut, cre],
   RStudio [cph] (Copyright for ggplot2 code copied to cowplot)
 Maintainer: Claus O. Wilke <wilke@austin.utexas.edu>
 Repository: CRAN
-Date/Publication: 2017-11-16 09:18:26 UTC
+Date/Publication: 2017-11-16 22:07:45 UTC
