@@ -7,15 +7,15 @@
 ggdraw(plot = NULL, xlim = c(0, 1), ylim = c(0, 1))
 }
 \arguments{
-\item{plot}{The plot to use as a starting point. Can be a ggplot2 plot, an arbitrary gtable,
-or a recorded base-R plot, as in \code{\link[=plot_grid]{plot_grid()}}.}
+\item{plot}{The plot to use as a starting point. Can be a ggplot2 plot, an arbitrary
+grob or gtable, or a recorded base-R plot, as in \code{\link[=plot_to_gtable]{plot_to_gtable()}}.}
 
 \item{xlim}{The x-axis limits for the drawing layer.}
 
 \item{ylim}{The y-axis limits for the drawing layer.}
 }
 \description{
-Set up a drawing layer on top of a ggplot
+Set up a drawing layer on top of a ggplot.
 }
 \examples{
 p <- ggplot(mpg, aes(displ, cty)) + geom_point()

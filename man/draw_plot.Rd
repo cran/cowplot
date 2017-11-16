@@ -7,8 +7,8 @@
 draw_plot(plot, x = 0, y = 0, width = 1, height = 1, scale = 1)
 }
 \arguments{
-\item{plot}{The plot to place. Can be a ggplot2 plot, an arbitrary gtable,
-or a recorded base-R plot, as in \code{\link[=plot_grid]{plot_grid()}}.}
+\item{plot}{The plot to place. Can be a ggplot2 plot, an arbitrary grob or gtable,
+or a recorded base-R plot, as in \code{\link[=plot_to_gtable]{plot_to_gtable()}}.}
 
 \item{x}{The x location of the lower left corner of the plot.}
 
@@ -24,4 +24,10 @@ of \code{scale = 1} indicates no scaling.}
 \description{
 Places a plot somewhere onto the drawing canvas. By default, coordinates run from
 0 to 1, and the point (0, 0) is in the lower left corner of the canvas.
+}
+\examples{
+# make a plot
+p <- qplot(1:10, 1:10)
+# draw into the top-right corner of a larger plot area
+ggdraw() + draw_plot(p, .6, .6, .4, .4)
 }

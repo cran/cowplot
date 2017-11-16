@@ -213,9 +213,8 @@ align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
 #' Arrange multiple plots into a grid
 #'
 #' Arrange multiple plots into a grid.
-#' @param ... List of plots to be arranged into the grid. The plots can be objects of one of
-#'            the following classes: \code{\link[ggplot2]{ggplot}}, \code{\link[grDevices:recordPlot]{recordedplot}},
-#'            \code{\link[gtable]{gtable}}, or alternative can be a function creating a plot when called (see examples).
+#' @param ... List of plots to be arranged into the grid. The plots can be any objects that
+#'   the function [plot_to_gtable()] can handle (see also examples).
 #' @param plotlist (optional) List of plots to display. Alternatively, the plots can be provided
 #' individually as the first n arguments of the function plot_grid (see examples).
 #' @param align (optional) Specifies whether graphs in the grid should be horizontally ("h") or
@@ -236,14 +235,16 @@ align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
 #' @param label_fontfamily (optional) Font family of the plot labels. If not provided, is taken from the current theme.
 #' @param label_fontface (optional) Font face of the plot labels. Default is "bold".
 #' @param label_colour (optional) Color of the plot labels. If not provided, is taken from the current theme.
-#' @param label_x (optional) Vector of x positions for plot labels, relative to each subplot.
+#' @param label_x (optional) Single value or vector of x positions for plot labels, relative to each subplot.
 #'   Defaults to 0 for all labels. (Each label is placed all the way to the left of each plot.)
-#' @param label_y (optional) Vector of y positions for plot labels, relative to each subplot.
+#' @param label_y (optional) Single value or vector of y positions for plot labels, relative to each subplot.
 #'   Defaults to 1 for all labels. (Each label is placed all the way to the top of each plot.)
 #' @param hjust Adjusts the horizontal position of each label. More negative values move the label further
-#'              to the right on the plot canvas. Default is -0.5.
+#'   to the right on the plot canvas. Can be a single value (applied to all labels) or a vector of values
+#'   (one for each label). Default is -0.5.
 #' @param vjust Adjusts the vertical position of each label. More positive values move the label further
-#'              down on the plot canvas. Default is 1.5.
+#'   down on the plot canvas. Can be a single value (applied to all labels) or a vector of values
+#'   (one for each label). Default is 1.5.
 #' @param scale Individual number or vector of numbers greater than 0. Enables you to scale the size of all or
 #'   select plots. Usually it's preferable to set margins instead of using `scale`, but `scale` can
 #'   sometimes be more powerful.
@@ -290,7 +291,7 @@ align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
 #' p6 <- recordPlot()
 #' dev.off()
 #' p7 <- function() image(volcano)
-#' p8 <- gtable::gtable_col("circle", list(grid::circleGrob()))
+#' p8 <- grid::circleGrob()
 #'
 #' plot_grid(p1, p6, p7, p8, labels = "AUTO", scale = c(1, 1, .85, .9))
 #' }

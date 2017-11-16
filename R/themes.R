@@ -43,10 +43,11 @@ theme_cowplot <- function(font_size = 14, font_family = "", line_size = .5) {
       # the following two lines are not needed for ggplot2 2.2.0 or later
       axis.line.x       = element_line(colour = "black", size = line_size, lineend = "square"),
       axis.line.y       = element_line(colour = "black", size = line_size, lineend = "square"),
+      legend.background = element_blank(),
       legend.key        = element_blank(),
       legend.key.size   = unit(1, "lines"),
+      legend.spacing    = unit(0.4, "cm"),
       legend.text       = element_text(size = rel(small_rel)),
-      #    legend.position   = c(-0.03, 1.05),
       legend.justification = c("left", "center"),
       panel.background  = element_blank(),
       panel.border      = element_blank(),
@@ -152,6 +153,26 @@ theme_nothing <- function(base_size = 14, base_family = ""){
       complete = TRUE
     )
 }
+
+#' Create a theme for map plotting
+#'
+#' The theme created by this function is useful for plotting maps with cowplot default sizing.
+#' @param base_size Overall font size. Default is 14.
+#' @param base_family Base font family.
+#' @return The theme.
+#' @examples
+#' usa_data = map_data("usa")
+#' ggplot(usa_data, aes(long, lat, group=region)) + geom_polygon() + theme_map()
+#' ggplot(usa_data, aes(long, lat, fill = region)) + geom_polygon() + theme_map()
+#' ggplot(usa_data, aes(long, lat, fill = region)) + facet_wrap(~region, scales = "free") +
+#'   geom_polygon() + theme_map()
+#' @export
+theme_map <- function(base_size = 14, base_family = ""){
+  # work based off of theme_void
+  theme_void(base_size = base_size, base_family = base_family)
+}
+
+
 
 #' Add/modify/remove the background grid in a ggplot2 plot
 #'
