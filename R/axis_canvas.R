@@ -1,7 +1,6 @@
 #' Insert an axis-like grob on either side of a plot panel in a [ggplot2] plot.
 #'
 #' The function `insert_xaxis_grob()` inserts a grob at the top or bottom of the plot panel in a [ggplot2] plot.
-#' The function `insert_yaxis_grob()` inserts a grob to the right or left of the plot panel in a [ggplot2] plot.
 #'
 #' For usage examples, see [axis_canvas()].
 #' @param plot The plot into which the grob will be inserted.
@@ -21,7 +20,7 @@ insert_xaxis_grob <- function(plot, grob, height = grid::unit(0.2, "null"), posi
     grob <- get_panel(grob)
   }
 
-  gt <- plot_to_gtable(plot)
+  gt <- as_gtable(plot)
 
   pp <- gt$layout[gt$layout$name == "panel",]
   if (nrow(pp) != 1)
@@ -39,6 +38,8 @@ insert_xaxis_grob <- function(plot, grob, height = grid::unit(0.2, "null"), posi
   }
 }
 
+#' The function `insert_yaxis_grob()` inserts a grob to the right or left of the plot panel in a [ggplot2] plot.
+#'
 #' @rdname insert_xaxis_grob
 #' @export
 insert_yaxis_grob <- function(plot, grob, width = grid::unit(0.2, "null"), position = c("right", "left"))
@@ -48,7 +49,7 @@ insert_yaxis_grob <- function(plot, grob, width = grid::unit(0.2, "null"), posit
     grob <- get_panel(grob)
   }
 
-  gt <- plot_to_gtable(plot)
+  gt <- as_gtable(plot)
 
   pp <- gt$layout[gt$layout$name == "panel",]
   if (nrow(pp) != 1)
@@ -89,6 +90,8 @@ insert_yaxis_grob <- function(plot, grob, width = grid::unit(0.2, "null"), posit
 #' # annotate line graphs with labels on the right
 #' library(dplyr)
 #' library(tidyr)
+#' library(ggplot2)
+#' theme_set(theme_half_open())
 #' x <- seq(0, 10, .1)
 #' d <- data.frame(x,
 #'                 linear = x,

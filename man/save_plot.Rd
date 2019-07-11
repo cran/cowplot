@@ -2,11 +2,11 @@
 % Please edit documentation in R/save.R
 \name{save_plot}
 \alias{save_plot}
-\title{Alternative to ggsave, with better support for multi-figure plots.}
+\title{Alternative to \code{ggsave()}, with better support for multi-figure plots.}
 \usage{
-save_plot(filename, plot, ncol = 1, nrow = 1, base_height = 4,
-  base_aspect_ratio = 1.1, base_width = NULL, ..., cols = NULL,
-  rows = NULL)
+save_plot(filename, plot, ncol = 1, nrow = 1, base_height = 3.71,
+  base_asp = 1.618, base_width = NULL, ..., cols, rows,
+  base_aspect_ratio, width, height)
 }
 \arguments{
 \item{filename}{Name of the plot file to generate.}
@@ -18,31 +18,37 @@ save_plot(filename, plot, ncol = 1, nrow = 1, base_height = 4,
 \item{nrow}{Number of subplot rows.}
 
 \item{base_height}{The height (in inches) of the plot or of one sub-plot if \code{nrow}
-or \code{ncol} > 1. Default is 4.}
+or \code{ncol} > 1. Default is 3.71.}
 
-\item{base_aspect_ratio}{The aspect ratio of the plot or of one sub-plot if \code{nrow}
+\item{base_asp}{The aspect ratio (width/height) of the plot or of one sub-plot if \code{nrow}
 or \code{ncol} > 1. This argument is used if \code{base_width = NULL} or if \code{base_height = NULL};
-if width or height is missing the aspect ratio will be used calculate the \code{NULL} value.
-The default is 1.1, which works well for figures without a legend.}
+if both width and height are provided then the aspect ratio is ignored.
+The default is 1.618 (the golden ratio), which works well for figures with a legend.}
 
 \item{base_width}{The width (in inches) of the plot or of one sub-plot if \code{nrow}
 or \code{ncol} > 1. Default is \code{NULL}, which means that the width is calculated from
-\code{height} and \code{base_aspect_ratio}.}
+\code{base_height} and \code{base_aspect_ratio}.}
 
-\item{...}{Other arguments to be handed to \code{ggsave}.}
+\item{...}{Other arguments to be handed to \code{\link[=ggsave2]{ggsave2()}}.}
 
-\item{cols}{Deprecated. Like \code{ncol}.}
+\item{cols}{Deprecated. Use \code{ncol}.}
 
-\item{rows}{Deprecated. Like \code{nrow}.}
+\item{rows}{Deprecated. Use \code{nrow}.}
+
+\item{base_aspect_ratio}{Deprecated. Use \code{base_asp}.}
+
+\item{width}{Deprecated. Don't use.}
+
+\item{height}{Deprecated. Don't use.}
 }
 \description{
-This function replaces the standard \code{ggsave} function for saving a plot into a file. It
-has several advantages over \code{ggsave}. First, it uses default sizes that work well with
+This function replaces the standard \code{\link[=ggsave]{ggsave()}} function for saving a plot into a file. It
+has several advantages over \code{ggsave()}. First, it uses default sizes that work well with
 the cowplot theme, so that frequently a plot size does not have to be explicitly specified. Second, it
 acknowledges that one often first develops individual plots and then combines them into
-multi-plot figures, and it makes it easy---in combination with \code{plot_grid}---to carry out
+multi-plot figures, and it makes it easy---in combination with \code{\link[=plot_grid]{plot_grid()}}---to carry out
 this workflow. Finally, it makes it easy to adjust the aspect ratio of the figure, which is
-frequently necessary to accommodate the figure legend.
+frequently necessary to accommodate plots with or without figure legend.
 }
 \details{
 The key idea for this function is that plots are often grids, with sup-plots at the individual
@@ -52,21 +58,29 @@ if we have code that can save a single figure, it is trivial to adapt this code 
 of multiple comparable figures. See examples for details.
 }
 \examples{
-# save a single plot without legend
+\donttest{
+library(ggplot2)
+
+# save a single plot with a legend
+p1 <- ggplot(mpg, aes(x = cty, y = hwy, color = factor(cyl))) +
+  geom_point(size = 2) +
+  theme_half_open()
+save_plot("p1.png", p1)
+# same as p1 but determine base_width given base_height
+save_plot("p2.png", p1, base_height = NULL, base_width = 6)
+
+# save a single plot without legend, adjust aspect ratio
 x <- (1:100)/10
-p1 <- qplot(x, 2*x+5, geom='line')
-save_plot("p1.pdf", p1)
+p3 <- ggplot(data.frame(x = x, y = x*sin(x)), aes(x, y)) +
+ geom_line() +
+ theme_minimal_hgrid()
+save_plot("p3.pdf", p3, base_asp = 1.1)
+
 # now combine with a second plot and save
-p2B <- qplot(x, -x^2+10*x-3, geom='line')
-p2 <- plot_grid(p1, p2B, labels=c("A", "B"))
-save_plot("p2.pdf", p2, ncol = 2)
-# save a single plot with legend, changing the aspect ratio to make room for the legend
-p3 <- ggplot(mpg, aes(x = cty, y = hwy, colour = factor(cyl))) + geom_point(size=2.5)
-save_plot("p3.png", p3, base_aspect_ratio = 1.3)
-# same as p3 but determine base_height given base_aspect_ratio and base_width
-p4 <- ggplot(mpg, aes(x = cty, y = hwy, colour = factor(cyl))) + geom_point(size=2.5)
-save_plot("p4.png", p4, base_height = NULL, base_aspect_ratio = 1.618, base_width = 6)
-# same as p4 but determine base_width given base_aspect_ratio and base_height
-p5 <- ggplot(mpg, aes(x = cty, y = hwy, colour = factor(cyl))) + geom_point(size=2.5)
-save_plot("p5.png", p5, base_height = 6, base_aspect_ratio = 1.618, base_width = NULL)
+p3b <- ggplot(data.frame(x = x, y = cos(x)+x), aes(x, y)) +
+ geom_line() +
+ theme_minimal_hgrid()
+p4 <- plot_grid(p3, p3b, labels = "AUTO")
+save_plot("p4.pdf", p4, ncol = 2, base_asp = 1.1)
+}
 }

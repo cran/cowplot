@@ -4,12 +4,14 @@
 \alias{theme_nothing}
 \title{Create a completely empty theme}
 \usage{
-theme_nothing(base_size = 14, base_family = "")
+theme_nothing(font_size = 14, font_family = "", rel_small = 12/14)
 }
 \arguments{
-\item{base_size}{Overall font size. Default is 14.}
+\item{font_size}{Overall font size. Default is 14.}
 
-\item{base_family}{Base font family.}
+\item{font_family}{Base font family.}
+
+\item{rel_small}{Relative size of small text}
 }
 \value{
 The theme.
@@ -18,5 +20,9 @@ The theme.
 The theme created by this function shows nothing but the plot panel.
 }
 \examples{
-qplot(1:10, (1:10)^2) + theme_nothing()
+library(ggplot2)
+
+ggplot(mtcars, aes(disp, mpg, color = cyl)) +
+  geom_point() +
+  theme_nothing()
 }

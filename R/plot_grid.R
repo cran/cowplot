@@ -1,220 +1,8 @@
-
-#' Align multiple plots along a specified margin
-#'
-#' The function aligns the dimensions of multiple plots along a specified axis, and is solely a helper function
-#' for [align_plots()] to reduce redundancy. Each element of the \code{sizes}
-#' list corresponds to the dimensions of a plot being aligned. They should be vectors created from calls to
-#' \code{grob$heights} or \code{grob$widths} depending on whether you are aligning vertically or horizontally.
-#' The list of dimensions is generated automatically by the [align_plots()] function, but see examples.
-#' If the same number of elements exist for all plots for the specified
-#' margin, the function will align individual elements on the margin. Otherwise, it aligns the plot by adding
-#' white space to plot margins so that all margins have the same dimensions.
-#'
-#' @param sizes list of dimensions for each plot being aligned. Each element of list
-#'  obtained by a call to \code{grob$heights} or \code{grob$widths} (see example).
-#' @param margin_to_align string either "first" or "last" for which part of plot area should be aligned.
-#'  If vertically aligning, "first" aligns left margin and "last" aligns right margin. If horizontally aligning
-#'  "first" aligns top margin and "last" aligns bottom margin
-#' @examples
-#' # Example for how to utilize, though align_plots() does this internally and automatically
-#' p1 <- qplot(1:10, 1:10)
-#' p2 <- qplot(1:10, (1:10)^2)
-#' p3 <- qplot(1:10, (1:10)^3)
-#' plots <- list(p1, p2, p3)
-#' grobs <- lapply(plots, ggplot2::ggplotGrob)
-#' plot_widths <- lapply(grobs, function(x){x$widths})
-#' # Aligning the Left margins of all plots
-#' aligned_widths <- align_margin(plot_widths, "first")
-#' # Aligning the right margins of all plots as well
-#' aligned_widths <- align_margin(plot_widths, "last")
-#' # Setting the dimensions of plots to the aligned dimensions
-#' for(i in 1:3){
-#'    plots[[i]]$widths <- aligned_widths[[i]]
-#' }
-#' @export
-
-align_margin <- function(sizes, margin_to_align) {
-
-  # finds the indices being aligned for each of the plots
-  list_indices <- switch(margin_to_align,
-                            first = lapply(sizes, function(x) 1:(grep("null", x)[1]-1)),
-                            last = lapply(sizes, function(x) (grep("null", x)[length(grep("null", x))]+1):length(x)),
-                            stop("Invalid margin input, should be either 'first' or 'last'"))
-
-  # Either 1 or length of the sizes for each plot, but used for flexible case handling
-  extreme_margin <- switch(margin_to_align,
-                           first = lapply(sizes, function(x) 1),
-                           last = lapply(sizes, function(x) length(x)))
-
-  grob_seq <- seq_along(list_indices)
-  num <- unique(unlist(lapply(list_indices, function(x) length(x))))
-  num[num==0] <- NULL # remove entry for missing graphs
-
-  # Align if different number of items in margin
-  if(length(num) > 1){
-    margins <- lapply(grob_seq, function(x) {sum(sizes[[x]][list_indices[[x]]])})
-    largest_margin <- max(do.call(grid::unit.c, margins))
-    # For each grob, make the width of the first one equal to
-    lapply(grob_seq, function(x){
-      sizes[[x]][extreme_margin[[x]]]  <- largest_margin - sum(sizes[[x]][list_indices[[x]][which(list_indices[[x]] != extreme_margin[[x]])] ])
-      sizes[[x]]
-    })
-    # Align if left margin has same number of items
-  } else{
-    # If margins have same number of items, then make all the same length
-    max_margins <- do.call(grid::unit.pmax, lapply(grob_seq, function(x) sizes[[x]][list_indices[[x]]] ))
-    lapply(grob_seq, function(x){
-      sizes[[x]][list_indices[[x]]] <- max_margins
-      sizes[[x]]
-    })
-  }
-}
-
-
-#' Align multiple plots vertically and/or horizontally
-#'
-#' Align the plot area of multiple plots. Inputs are a list of plots plus alignment parameters.
-#' Horizontal or vertical alignment or both are possible. In the simplest case the function will align all
-#' elements of each plot, but it can handle more complex cases as long as the axis parameter is defined. In this case,
-#' alignment is done through a call to [align_margin()]. The function `align_plots` is called by the [plot_grid()] function
-#' and is usually not called directly, though direct calling of the function is useful if plots with
-#' multiple y-axes are desired (see example).
-#'
-#' @param ... List of plots to be aligned.
-#' @param plotlist (optional) List of plots to display. Alternatively, the plots can be provided
-#'  individually as the first n arguments of the function align_plots (see plot_grid examples).
-#' @param align (optional) Specifies whether graphs in the grid should be horizontally ("h") or
-#'  vertically ("v") aligned. Options are \code{align="none"} (default), "hv" (align in both directions), "h", and "v".
-#' @param axis (optional) Specifies whether graphs should be aligned by the left ("l"), right ("r"), top ("t"), or bottom ("b")
-#'  margins. Options are \code{axis="none"} (default), or a string of any combination of "l", "r", "t", and/or "b" in any order
-#'  (e.g. \code{axis="tblr"} or \code{axis="rlbt"} for aligning all margins)
-#' @examples
-#'p1 <- ggplot(mpg, aes(manufacturer, hwy)) + stat_summary(fun.y="median", geom = "bar") +
-#'          theme(axis.text.x = element_text(angle = 45, hjust = 1, vjust= 1))
-#'p2 <- ggplot(mpg, aes(manufacturer, displ)) + geom_point(color="red") +
-#'  scale_y_continuous(position = "right") +
-#'  theme(axis.text.x = element_blank())
-#' # manually align and plot on top of each other
-#'aligned_plots <- align_plots(p1, p2, align="hv", axis="tblr")
-#' # Note: In most cases two y-axes should not be used, but this example
-#' # illustrates how one would could accomplish it.
-#'ggdraw(aligned_plots[[1]]) +draw_plot(aligned_plots[[2]])
-#' @export
-align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"), axis = c("none", "l", "r", "t", "b", "lr", "tb", "tblr")){
-  # browser()
-  plots <- c(list(...), plotlist)
-  num_plots <- length(plots)
-
-  # convert list of plots into list of grobs / gtables
-  grobs <- lapply(plots, function(x) {if (!is.null(x)) plot_to_gtable(x) else NULL})
-
-
-  #aligning graphs.
-  halign <- switch(align[1],
-                   h = TRUE,
-                   vh = TRUE,
-                   hv = TRUE,
-                   FALSE
-  )
-  valign <- switch(align[1],
-                   v = TRUE,
-                   vh = TRUE,
-                   hv = TRUE,
-                   FALSE
-  )
-
-  vcomplex_align <- hcomplex_align <- FALSE
-  # calculate the maximum widths and heights over all graphs, and find out whether
-  # they can be aligned if necessary
-  if (valign)
-  {
-    num_widths <- unique(lapply(grobs, function(x){length(x$widths)})) # count number of unique lengths
-    num_widths[num_widths==0] <- NULL # remove entry for missing graphs
-    if (length(num_widths) > 1) {
-      # Complex aligns are ones that don't have the same number of elements that have sizes
-      vcomplex_align = TRUE
-      if(axis[1] == "none"){
-        warning("Complex graphs cannot be vertically aligned unless axis parameter is set properly. Placing graphs unaligned.")
-        valign=FALSE
-      }
-
-      max_widths <- lapply(grobs, function(x){x$widths})
-      #
-      # Aligning the Left margins
-      if(length(grep("l", axis[1])) > 0) {
-        max_widths <- align_margin(max_widths, "first")
-      }
-      if(length(grep("r", axis[1])) > 0){
-        max_widths <- align_margin(max_widths, "last")
-      }
-
-    } else {
-      max_widths <- list(do.call(grid::unit.pmax, lapply(grobs, function(x){x$widths})))
-    }
-  }
-
-  if (halign)
-  {
-    num_heights <- unique(lapply(grobs, function(x){length(x$heights)})) # count number of unique lengths
-    num_heights[num_heights==0] <- NULL # remove entry for missing graphs
-    if (length(num_heights) > 1) {
-      # Complex aligns are ones that don't have the same number of elements that have sizes
-      hcomplex_align = TRUE
-      if(axis[1] == "none"){
-        warning("Graphs cannot be horizontally aligned, unless axis parameter set. Placing graphs unaligned.")
-        halign=FALSE
-      }
-
-      max_heights <- lapply(grobs, function(x){x$heights})
-
-      if(length(grep("t", axis[1])) > 0){
-
-        max_heights <- align_margin(max_heights, "first")
-      }
-      if(length(grep("b", axis[1])) > 0) {
-
-        max_heights <- align_margin(max_heights, "last")
-      }
-
-    } else {
-      max_heights <- list(do.call(grid::unit.pmax, lapply(grobs, function(x){x$heights})))
-    }
-  }
-
-  # now assign to all graphs
-  for ( i in 1:num_plots )
-  {
-    if (!is.null(grobs[[i]]))
-    {
-
-      if (valign) {
-        if(vcomplex_align){
-          grobs[[i]]$widths <- max_widths[[i]]
-        } else{
-          grobs[[i]]$widths <- max_widths[[1]]
-        }
-      }
-      if (halign) {
-        if(hcomplex_align){
-          grobs[[i]]$heights <- max_heights[[i]]
-        } else{
-          grobs[[i]]$heights <- max_heights[[1]]
-        }
-      }
-
-    }
-  }
-  grobs
-}
-
-
-
-
 #' Arrange multiple plots into a grid
 #'
 #' Arrange multiple plots into a grid.
 #' @param ... List of plots to be arranged into the grid. The plots can be any objects that
-#'   the function [plot_to_gtable()] can handle (see also examples).
+#'   the function [as_gtable()] can handle (see also examples).
 #' @param plotlist (optional) List of plots to display. Alternatively, the plots can be provided
 #' individually as the first n arguments of the function plot_grid (see examples).
 #' @param align (optional) Specifies whether graphs in the grid should be horizontally ("h") or
@@ -222,12 +10,13 @@ align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
 #' @param axis (optional) Specifies whether graphs should be aligned by the left ("l"), right ("r"), top ("t"), or bottom ("b")
 #'  margins. Options are "none" (default), or a string of any combination of l, r, t, and b in any order (e.g. "tblr" or "rlbt" for aligning all margins).
 #'  Must be specified if any of the graphs are complex (e.g. faceted) and alignment is specified and desired. See [align_plots()] for details.
+#' @param greedy (optional) How should margins be adjusted during alignment. See [align_plots()] for details.
 #' @param nrow (optional) Number of rows in the plot grid.
 #' @param ncol (optional) Number of columns in the plot grid.
 #' @param rel_widths (optional) Numerical vector of relative columns widths. For example, in a two-column
 #'              grid, \code{rel_widths = c(2, 1)} would make the first column twice as wide as the
 #'              second column.
-#' @param rel_heights (optional) Numerical vector of relative columns heights. Works just as
+#' @param rel_heights (optional) Numerical vector of relative rows heights. Works just as
 #'              \code{rel_widths} does, but for rows rather than columns.
 #' @param labels (optional) List of labels to be added to the plots. You can also set \code{labels="AUTO"} to
 #'              auto-generate upper-case labels or \code{labels="auto"} to auto-generate lower-case labels.
@@ -251,10 +40,16 @@ align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
 #' @param rows Deprecated. Use \code{nrow}.
 #' @param cols Deprecated. Use \code{ncol}.
 #' @examples
-#' p1 <- qplot(1:10, 1:10)
-#' p2 <- qplot(1:10, (1:10)^2)
-#' p3 <- qplot(1:10, (1:10)^3)
-#' p4 <- qplot(1:10, (1:10)^4)
+#' library(ggplot2)
+#'
+#' df <- data.frame(
+#'   x = 1:10, y1 = 1:10, y2 = (1:10)^2, y3 = (1:10)^3, y4 = (1:10)^4
+#' )
+#'
+#' p1 <- ggplot(df, aes(x, y1)) + geom_point()
+#' p2 <- ggplot(df, aes(x, y2)) + geom_point()
+#' p3 <- ggplot(df, aes(x, y3)) + geom_point()
+#' p4 <- ggplot(df, aes(x, y4)) + geom_point()
 #' p5 <- ggplot(mpg, aes(as.factor(year), hwy)) +
 #'         geom_boxplot() +
 #'         facet_wrap(~class, scales = "free_y")
@@ -262,40 +57,71 @@ align_plots <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
 #' plot_grid(p1, p2, p3, p4)
 #'
 #' # simple grid with labels and aligned plots
-#' plot_grid(p1, p2, p3, p4, labels=c('A', 'B', 'C', 'D'), align="hv")
+#' plot_grid(
+#'   p1, p2, p3, p4,
+#'   labels = c('A', 'B', 'C', 'D'),
+#'   align="hv"
+#' )
 #'
 #' # manually setting the number of rows, auto-generate upper-case labels
-#' plot_grid(p1, p2, p3, nrow=3, labels="AUTO", label_size=12, align="v")
+#' plot_grid(p1, p2, p3,
+#'   nrow = 3,
+#'   labels = "AUTO",
+#'   label_size = 12,
+#'   align = "v"
+#' )
 #'
 #' # making rows and columns of different widths/heights
-#' plot_grid(p1, p2, p3, p4, align='hv', rel_heights=c(2,1), rel_widths=c(1,2))
+#' plot_grid(
+#'   p1, p2, p3, p4,
+#'   align = 'hv',
+#'   rel_heights = c(2,1),
+#'   rel_widths = c(1,2)
+#' )
 #'
 #' # aligning complex plots in a grid
-#' plot_grid(p1, p5, align="h", axis="b", nrow = 1, rel_widths = c(1,2))
+#' plot_grid(
+#'   p1, p5,
+#'   align = "h", axis = "b", nrow = 1, rel_widths = c(1, 2)
+#' )
 #'
 #' # more examples
 #' \donttest{
 #' #' # missing plots in some grid locations, auto-generate lower-case labels
-#' plot_grid(p1, NULL, NULL, p2, p3, NULL, ncol=2,
-#'  labels="auto", label_size=12, align="v")
+#' plot_grid(
+#'  p1, NULL, NULL, p2, p3, NULL,
+#'  ncol = 2,
+#'  labels = "auto",
+#'  label_size = 12,
+#'  align = "v"
+#' )
 #'
 #' # can align top of plotting area as well as bottom
-#' plot_grid(p1, p5, align="h", axis="tb", nrow = 1, rel_widths = c(1,2))
+#' plot_grid(
+#'   p1, p5,
+#'   align = "h", axis = "tb",
+#'   nrow = 1, rel_widths = c(1, 2)
+#' )
 #'
 #' # other types of plots not generated with ggplot
-#' dev.new()
-#' par(xpd = NA, # switch off clipping, necessary to always see axis labels
-#'     bg = "transparent", # switch off background to avoid obscuring adjacent plots
-#'     oma = c(2, 2, 0, 0), # move plot to the right and up
-#'     mgp = c(2, 1, 0) # move axis labels closer to axis
-#' )
-#' plot(sqrt)
-#' p6 <- recordPlot()
-#' dev.off()
-#' p7 <- function() image(volcano)
+#' p6 <- ~{
+#'   par(
+#'     mar = c(3, 3, 1, 1),
+#'     mgp = c(2, 1, 0)
+#'   )
+#'   plot(sqrt)
+#' }
+#'
+#' p7 <- function() {
+#'   par(
+#'     mar = c(2, 2, 1, 1),
+#'     mgp = c(2, 1, 0)
+#'   )
+#'   image(volcano)
+#' }
 #' p8 <- grid::circleGrob()
 #'
-#' plot_grid(p1, p6, p7, p8, labels = "AUTO", scale = c(1, 1, .85, .9))
+#' plot_grid(p1, p6, p7, p8, labels = "AUTO", scale = c(1, .9, .9, .7))
 #' }
 #' @export
 plot_grid <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
@@ -304,7 +130,7 @@ plot_grid <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
                       rel_heights = 1, labels = NULL, label_size = 14,
                       label_fontfamily = NULL, label_fontface = "bold", label_colour = NULL,
                       label_x = 0, label_y = 1,
-                      hjust = -0.5, vjust = 1.5, scale = 1.,
+                      hjust = -0.5, vjust = 1.5, scale = 1., greedy = TRUE,
                       cols = NULL, rows = NULL ) {
 
   # Make a list from the ... arguments and plotlist
@@ -333,7 +159,7 @@ plot_grid <- function(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
   }
 
   # Align the plots (if specified)
-  grobs <- align_plots(plotlist = plots, align=align, axis=axis)
+  grobs <- align_plots(plotlist = plots, align = align, axis = axis, greedy = greedy)
 
   # calculate grid dimensions
   if (is.null(cols) && is.null(rows)){

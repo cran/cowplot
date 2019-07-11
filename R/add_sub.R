@@ -39,12 +39,14 @@
 #'    y and vjust parameters, this can be changed.
 #' @param fontfamily The font family
 #' @param fontface The font face ("plain", "bold", etc.)
-#' @param colour Text color
+#' @param color,colour Text color
 #' @param size Point size of text
 #' @param angle Angle at which text is drawn
 #' @param lineheight Line height of text
 #' @return A gtable object holding the modified plot.
 #' @examples
+#' library(ggplot2)
+#' theme_set(theme_half_open())
 #' p1 <- ggplot(mtcars, aes(mpg, disp)) + geom_line(colour = "blue") + background_grid(minor='none')
 #' ggdraw(add_sub(p1, "This is an annotation.\nAnnotations can span multiple lines."))
 #'
@@ -66,9 +68,14 @@
 #'        y = 6, x = 0.03, hjust = 0))
 #' @export
 add_sub <- function(plot, label, x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, vpadding = grid::unit(1, "lines"),
-                    fontfamily = "", fontface = "plain", colour = "black", size = 14, angle = 0, lineheight = 0.9)
+                    fontfamily = "", fontface = "plain", color = "black", size = 14, angle = 0,
+                    lineheight = 0.9, colour)
 {
-  text_par <- grid::gpar(col = colour,
+  if (!missing(colour)) {
+    color <- colour
+  }
+
+  text_par <- grid::gpar(col = color,
                    fontsize = size,
                    fontfamily = fontfamily,
                    fontface = fontface,
@@ -78,7 +85,7 @@ add_sub <- function(plot, label, x = 0.5, y = 0.5, hjust = 0.5, vjust = 0.5, vpa
   ann.grob <- grid::textGrob(label, x = grid::unit(x, "npc"), y = grid::unit(y, "npc"),
                              hjust = hjust, vjust = vjust, rot = angle, gp = text_par)
 
-  gt <- plot_to_gtable(plot)
+  gt <- as_gtable(plot)
 
   # locate xlab
   xi <- gt$layout[gt$layout$name == "xlab",]

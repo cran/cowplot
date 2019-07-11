@@ -3,8 +3,11 @@
 #' This function extracts just the legend from a ggplot
 #'
 #' @param plot A ggplot or gtable from which to retrieve the legend
-#' @return A gtable object holding just the lengend
+#' @return A gtable object holding just the legend or \code{NULL} if there is no legend.
 #' @examples
+#' library(ggplot2)
+#' theme_set(theme_half_open())
+#'
 #' p1 <- ggplot(mtcars, aes(mpg, disp)) + geom_line()
 #' plot.mpg <- ggplot(mpg, aes(x = cty, y = hwy, colour = factor(cyl))) + geom_point(size=2.5)
 #' # Note that these cannot be aligned vertically due to the legend in the plot.mpg
@@ -17,16 +20,6 @@
 #'                  plot_grid(NULL, legend, ncol=1),
 #'                  rel_widths=c(1, 0.2)))
 #' @export
-get_legend <- function(plot)
-{
-    grobs <- plot_to_gtable(plot)$grobs
-    legendIndex <- which(sapply(grobs, function(x) x$name) == "guide-box")
-    ## make sure this plot has a legend to be extracted
-    ## note that multiple legends show up as one grob so this still works for multiple legend plots (i.e. color and shape)
-    ## not sure if it is possible to create a plot with multiple legend grobs, but also not sure how this function should handle those situations so this seems to be the best check to provide a useful message
-    if (length(legendIndex) == 1){
-        legend <- grobs[[legendIndex]]
-    } else {
-        stop('Plot must contain a legend')
-    }
+get_legend <- function(plot) {
+  get_plot_component(plot, "guide-box")
 }

@@ -4,12 +4,21 @@
 \alias{theme_map}
 \title{Create a theme for map plotting}
 \usage{
-theme_map(base_size = 14, base_family = "")
+theme_map(font_size = 14, font_family = "", line_size = 0.5,
+  rel_small = 12/14, rel_tiny = 11/14, rel_large = 16/14)
 }
 \arguments{
-\item{base_size}{Overall font size. Default is 14.}
+\item{font_size}{Overall font size. Default is 14.}
 
-\item{base_family}{Base font family.}
+\item{font_family}{Base font family.}
+
+\item{line_size}{Line size for axis lines.}
+
+\item{rel_small}{Relative size of small text (e.g., axis tick labels)}
+
+\item{rel_tiny}{Relative size of tiny text (e.g., caption)}
+
+\item{rel_large}{Relative size of large text (e.g., title)}
 }
 \value{
 The theme.
@@ -18,9 +27,13 @@ The theme.
 The theme created by this function is useful for plotting maps with cowplot default sizing.
 }
 \examples{
+library(ggplot2)
+library(maps)
+
 usa_data = map_data("usa")
-ggplot(usa_data, aes(long, lat, group=region)) + geom_polygon() + theme_map()
-ggplot(usa_data, aes(long, lat, fill = region)) + geom_polygon() + theme_map()
-ggplot(usa_data, aes(long, lat, fill = region)) + facet_wrap(~region, scales = "free") +
+ggplot(usa_data, aes(long, lat, fill = region)) +
+  geom_polygon() + theme_map()
+ggplot(usa_data, aes(long, lat, fill = region)) +
+  facet_wrap(~region, scales = "free") +
   geom_polygon() + theme_map()
 }

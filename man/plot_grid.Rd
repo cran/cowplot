@@ -9,12 +9,12 @@ plot_grid(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
   nrow = NULL, ncol = NULL, rel_widths = 1, rel_heights = 1,
   labels = NULL, label_size = 14, label_fontfamily = NULL,
   label_fontface = "bold", label_colour = NULL, label_x = 0,
-  label_y = 1, hjust = -0.5, vjust = 1.5, scale = 1, cols = NULL,
-  rows = NULL)
+  label_y = 1, hjust = -0.5, vjust = 1.5, scale = 1,
+  greedy = TRUE, cols = NULL, rows = NULL)
 }
 \arguments{
 \item{...}{List of plots to be arranged into the grid. The plots can be any objects that
-the function \code{\link[=plot_to_gtable]{plot_to_gtable()}} can handle (see also examples).}
+the function \code{\link[=as_gtable]{as_gtable()}} can handle (see also examples).}
 
 \item{plotlist}{(optional) List of plots to display. Alternatively, the plots can be provided
 individually as the first n arguments of the function plot_grid (see examples).}
@@ -34,7 +34,7 @@ Must be specified if any of the graphs are complex (e.g. faceted) and alignment 
 grid, \code{rel_widths = c(2, 1)} would make the first column twice as wide as the
 second column.}
 
-\item{rel_heights}{(optional) Numerical vector of relative columns heights. Works just as
+\item{rel_heights}{(optional) Numerical vector of relative rows heights. Works just as
 \code{rel_widths} does, but for rows rather than columns.}
 
 \item{labels}{(optional) List of labels to be added to the plots. You can also set \code{labels="AUTO"} to
@@ -66,6 +66,8 @@ down on the plot canvas. Can be a single value (applied to all labels) or a vect
 select plots. Usually it's preferable to set margins instead of using \code{scale}, but \code{scale} can
 sometimes be more powerful.}
 
+\item{greedy}{(optional) How should margins be adjusted during alignment. See \code{\link[=align_plots]{align_plots()}} for details.}
+
 \item{cols}{Deprecated. Use \code{ncol}.}
 
 \item{rows}{Deprecated. Use \code{nrow}.}
@@ -74,10 +76,16 @@ sometimes be more powerful.}
 Arrange multiple plots into a grid.
 }
 \examples{
-p1 <- qplot(1:10, 1:10)
-p2 <- qplot(1:10, (1:10)^2)
-p3 <- qplot(1:10, (1:10)^3)
-p4 <- qplot(1:10, (1:10)^4)
+library(ggplot2)
+
+df <- data.frame(
+  x = 1:10, y1 = 1:10, y2 = (1:10)^2, y3 = (1:10)^3, y4 = (1:10)^4
+)
+
+p1 <- ggplot(df, aes(x, y1)) + geom_point()
+p2 <- ggplot(df, aes(x, y2)) + geom_point()
+p3 <- ggplot(df, aes(x, y3)) + geom_point()
+p4 <- ggplot(df, aes(x, y4)) + geom_point()
 p5 <- ggplot(mpg, aes(as.factor(year), hwy)) +
         geom_boxplot() +
         facet_wrap(~class, scales = "free_y")
@@ -85,39 +93,70 @@ p5 <- ggplot(mpg, aes(as.factor(year), hwy)) +
 plot_grid(p1, p2, p3, p4)
 
 # simple grid with labels and aligned plots
-plot_grid(p1, p2, p3, p4, labels=c('A', 'B', 'C', 'D'), align="hv")
+plot_grid(
+  p1, p2, p3, p4,
+  labels = c('A', 'B', 'C', 'D'),
+  align="hv"
+)
 
 # manually setting the number of rows, auto-generate upper-case labels
-plot_grid(p1, p2, p3, nrow=3, labels="AUTO", label_size=12, align="v")
+plot_grid(p1, p2, p3,
+  nrow = 3,
+  labels = "AUTO",
+  label_size = 12,
+  align = "v"
+)
 
 # making rows and columns of different widths/heights
-plot_grid(p1, p2, p3, p4, align='hv', rel_heights=c(2,1), rel_widths=c(1,2))
+plot_grid(
+  p1, p2, p3, p4,
+  align = 'hv',
+  rel_heights = c(2,1),
+  rel_widths = c(1,2)
+)
 
 # aligning complex plots in a grid
-plot_grid(p1, p5, align="h", axis="b", nrow = 1, rel_widths = c(1,2))
+plot_grid(
+  p1, p5,
+  align = "h", axis = "b", nrow = 1, rel_widths = c(1, 2)
+)
 
 # more examples
 \donttest{
 #' # missing plots in some grid locations, auto-generate lower-case labels
-plot_grid(p1, NULL, NULL, p2, p3, NULL, ncol=2,
- labels="auto", label_size=12, align="v")
+plot_grid(
+ p1, NULL, NULL, p2, p3, NULL,
+ ncol = 2,
+ labels = "auto",
+ label_size = 12,
+ align = "v"
+)
 
 # can align top of plotting area as well as bottom
-plot_grid(p1, p5, align="h", axis="tb", nrow = 1, rel_widths = c(1,2))
+plot_grid(
+  p1, p5,
+  align = "h", axis = "tb",
+  nrow = 1, rel_widths = c(1, 2)
+)
 
 # other types of plots not generated with ggplot
-dev.new()
-par(xpd = NA, # switch off clipping, necessary to always see axis labels
-    bg = "transparent", # switch off background to avoid obscuring adjacent plots
-    oma = c(2, 2, 0, 0), # move plot to the right and up
-    mgp = c(2, 1, 0) # move axis labels closer to axis
-)
-plot(sqrt)
-p6 <- recordPlot()
-dev.off()
-p7 <- function() image(volcano)
+p6 <- ~{
+  par(
+    mar = c(3, 3, 1, 1),
+    mgp = c(2, 1, 0)
+  )
+  plot(sqrt)
+}
+
+p7 <- function() {
+  par(
+    mar = c(2, 2, 1, 1),
+    mgp = c(2, 1, 0)
+  )
+  image(volcano)
+}
 p8 <- grid::circleGrob()
 
-plot_grid(p1, p6, p7, p8, labels = "AUTO", scale = c(1, 1, .85, .9))
+plot_grid(p1, p6, p7, p8, labels = "AUTO", scale = c(1, .9, .9, .7))
 }
 }

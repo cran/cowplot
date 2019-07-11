@@ -4,20 +4,26 @@
 \alias{ggdraw}
 \title{Set up a drawing layer on top of a ggplot}
 \usage{
-ggdraw(plot = NULL, xlim = c(0, 1), ylim = c(0, 1))
+ggdraw(plot = NULL, xlim = c(0, 1), ylim = c(0, 1), clip = "off")
 }
 \arguments{
 \item{plot}{The plot to use as a starting point. Can be a ggplot2 plot, an arbitrary
-grob or gtable, or a recorded base-R plot, as in \code{\link[=plot_to_gtable]{plot_to_gtable()}}.}
+grob or gtable, or a recorded base-R plot, as in \code{\link[=as_grob]{as_grob()}}.}
 
 \item{xlim}{The x-axis limits for the drawing layer.}
 
 \item{ylim}{The y-axis limits for the drawing layer.}
+
+\item{clip}{Should drawing be clipped to the set limits? The default is no ("off").}
 }
 \description{
 Set up a drawing layer on top of a ggplot.
 }
 \examples{
-p <- ggplot(mpg, aes(displ, cty)) + geom_point()
-ggdraw(p) + draw_label("Draft", colour = "grey", size = 120, angle = 45)
+library(ggplot2)
+
+p <- ggplot(mpg, aes(displ, cty)) +
+  geom_point() +
+  theme_minimal_grid()
+ggdraw(p) + draw_label("Draft", colour = "#80404080", size = 120, angle = 45)
 }

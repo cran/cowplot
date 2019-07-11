@@ -10,12 +10,15 @@ get_legend(plot)
 \item{plot}{A ggplot or gtable from which to retrieve the legend}
 }
 \value{
-A gtable object holding just the lengend
+A gtable object holding just the legend or \code{NULL} if there is no legend.
 }
 \description{
 This function extracts just the legend from a ggplot
 }
 \examples{
+library(ggplot2)
+theme_set(theme_half_open())
+
 p1 <- ggplot(mtcars, aes(mpg, disp)) + geom_line()
 plot.mpg <- ggplot(mpg, aes(x = cty, y = hwy, colour = factor(cyl))) + geom_point(size=2.5)
 # Note that these cannot be aligned vertically due to the legend in the plot.mpg

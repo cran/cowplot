@@ -4,13 +4,14 @@
 \alias{panel_border}
 \title{Add/remove the panel border in a ggplot2 plot}
 \usage{
-panel_border(colour = "gray80", size = 0.5, linetype = 1,
-  remove = FALSE)
+panel_border(color = "grey85", size = 1, linetype = 1,
+  remove = FALSE, colour)
 }
 \arguments{
-\item{colour}{The color of the border.}
+\item{color, colour}{The color of the border.}
 
-\item{size}{Size.}
+\item{size}{Size. Needs to be twice as large as desired outcome when panel clipping
+is on (the default).}
 
 \item{linetype}{Line type.}
 

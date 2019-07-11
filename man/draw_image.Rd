@@ -5,16 +5,16 @@
 \title{Draw an image}
 \usage{
 draw_image(image, x = 0, y = 0, width = 1, height = 1, scale = 1,
-  clip = "inherit", interpolate = TRUE)
+  clip = "inherit", interpolate = TRUE, hjust = 0, vjust = 0)
 }
 \arguments{
 \item{image}{The image to place. Can be a file path, a URL, or a raw vector with image data,
 as in \code{magick::image_read()}. Can also be an image previously created by \code{magick::image_read()} and
 related functions.}
 
-\item{x}{The x location of the lower left corner of the image.}
+\item{x}{The x location of the image. (Left side if \code{hjust = 0}.)}
 
-\item{y}{The y location of the lower left corner of the image.}
+\item{y}{The y location of the image. (Bottom side if \code{vjust = 0}.)}
 
 \item{width}{Width of the image.}
 
@@ -28,6 +28,10 @@ Note that clipping doesn't always work as expected, due to limitations of the gr
 
 \item{interpolate}{A logical value indicating whether to linearly interpolate the image
 (the alternative is to use nearest-neighbour interpolation, which gives a more blocky result).}
+
+\item{hjust}{Horizontal justification relative to x.}
+
+\item{vjust}{Vertical justification relative to y.}
 }
 \description{
 Places an image somewhere onto the drawing canvas. By default, coordinates run from
@@ -35,22 +39,35 @@ Places an image somewhere onto the drawing canvas. By default, coordinates run f
 package to work, and fails gracefully if that package is not installed.
 }
 \examples{
+library(ggplot2)
+
 # Use image as plot background
-p <- ggplot(iris, aes(x = Sepal.Length, fill = Species)) + geom_density(alpha = 0.7)
+p <- ggplot(iris, aes(x = Sepal.Length, fill = Species)) +
+  geom_density(alpha = 0.7) +
+  scale_y_continuous(expand = expand_scale(mult = c(0, 0.05))) +
+  theme_half_open(12)
+
+logo_file <- system.file("extdata", "logo.png", package = "cowplot")
 ggdraw() +
-  draw_image("http://jeroen.github.io/images/tiger.svg") +
-  draw_plot(p + theme(legend.box.background = element_rect(color = "white")))
+  draw_image(logo_file, scale = .7) +
+  draw_plot(p)
 
 # Make grid with plot and image
-p <- ggplot(iris, aes(x = Sepal.Length, fill = Species)) +
-  geom_density(alpha = 0.7)
-p2 <- ggdraw() + draw_image("http://jeroen.github.io/images/tiger.svg", scale = 0.9)
-plot_grid(p, p2, labels = "AUTO")
+
+cow_file <- system.file("extdata", "cow.jpg", package = "cowplot")
+p2 <- ggdraw() + draw_image(cow_file, scale = 0.9)
+plot_grid(
+  p + theme(legend.position = c(1, 1), legend.justification = c(1, 1)),
+  p2,
+  labels = "AUTO"
+)
 
 # Manipulate images and draw in plot coordinates
 if (requireNamespace("magick", quietly = TRUE)){
-  img <- magick::image_read("http://jeroen.github.io/images/tiger.svg")
-  img <- magick::image_transparent(img, color = "white")
+  img <- magick::image_transparent(
+    magick::image_read(logo_file),
+    color = "white"
+  )
   img2 <- magick::image_negate(img)
   ggplot(data.frame(x = 1:3, y = 1:3), aes(x, y)) +
     geom_point(size = 3) +
