@@ -4,13 +4,30 @@
 \alias{plot_grid}
 \title{Arrange multiple plots into a grid}
 \usage{
-plot_grid(..., plotlist = NULL, align = c("none", "h", "v", "hv"),
+plot_grid(
+  ...,
+  plotlist = NULL,
+  align = c("none", "h", "v", "hv"),
   axis = c("none", "l", "r", "t", "b", "lr", "tb", "tblr"),
-  nrow = NULL, ncol = NULL, rel_widths = 1, rel_heights = 1,
-  labels = NULL, label_size = 14, label_fontfamily = NULL,
-  label_fontface = "bold", label_colour = NULL, label_x = 0,
-  label_y = 1, hjust = -0.5, vjust = 1.5, scale = 1,
-  greedy = TRUE, cols = NULL, rows = NULL)
+  nrow = NULL,
+  ncol = NULL,
+  rel_widths = 1,
+  rel_heights = 1,
+  labels = NULL,
+  label_size = 14,
+  label_fontfamily = NULL,
+  label_fontface = "bold",
+  label_colour = NULL,
+  label_x = 0,
+  label_y = 1,
+  hjust = -0.5,
+  vjust = 1.5,
+  scale = 1,
+  greedy = TRUE,
+  byrow = TRUE,
+  cols = NULL,
+  rows = NULL
+)
 }
 \arguments{
 \item{...}{List of plots to be arranged into the grid. The plots can be any objects that
@@ -67,6 +84,8 @@ select plots. Usually it's preferable to set margins instead of using \code{scal
 sometimes be more powerful.}
 
 \item{greedy}{(optional) How should margins be adjusted during alignment. See \code{\link[=align_plots]{align_plots()}} for details.}
+
+\item{byrow}{Logical value indicating if the plots should be arrange by row (default) or by column.}
 
 \item{cols}{Deprecated. Use \code{ncol}.}
 
@@ -125,11 +144,18 @@ plot_grid(
 \donttest{
 #' # missing plots in some grid locations, auto-generate lower-case labels
 plot_grid(
- p1, NULL, NULL, p2, p3, NULL,
- ncol = 2,
- labels = "auto",
- label_size = 12,
- align = "v"
+  p1, NULL, NULL, p2, p3, NULL,
+  ncol = 2,
+  labels = "auto",
+  label_size = 12,
+  align = "v"
+)
+
+# can arrange plots on the grid by column as well as by row.
+plot_grid(
+  p1, NULL, p2, NULL, p3,
+  ncol = 2,
+  byrow = TRUE
 )
 
 # can align top of plotting area as well as bottom

@@ -6,8 +6,19 @@
 \alias{GeomDrawGrob}
 \title{Draw a grob.}
 \usage{
-draw_grob(grob, x = 0, y = 0, width = 1, height = 1, scale = 1,
-  clip = "inherit", hjust = 0, vjust = 0)
+draw_grob(
+  grob,
+  x = 0,
+  y = 0,
+  width = 1,
+  height = 1,
+  scale = 1,
+  clip = "inherit",
+  hjust = 0,
+  vjust = 0,
+  halign = 0.5,
+  valign = 0.5
+)
 }
 \arguments{
 \item{grob}{The grob to place.}
@@ -26,9 +37,10 @@ of \code{scale = 1} indicates no scaling.}
 \item{clip}{Set to "on" to clip the grob or "inherit" to not clip. Note that clipping doesn't always work as
 expected, due to limitations of the grid graphics system.}
 
-\item{hjust}{Horizontal justification relative to x.}
+\item{hjust, vjust}{Horizontal and vertical justification relative to x.}
 
-\item{vjust}{Vertical justification relative to y.}
+\item{halign, valign}{Horizontal and vertical justification of the grob inside
+the box.}
 }
 \description{
 Places an arbitrary grob somewhere onto the drawing canvas. By default, coordinates run from

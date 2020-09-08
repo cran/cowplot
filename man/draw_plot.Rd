@@ -4,8 +4,18 @@
 \alias{draw_plot}
 \title{Draw a (sub)plot.}
 \usage{
-draw_plot(plot, x = 0, y = 0, width = 1, height = 1, scale = 1,
-  hjust = 0, vjust = 0)
+draw_plot(
+  plot,
+  x = 0,
+  y = 0,
+  width = 1,
+  height = 1,
+  scale = 1,
+  hjust = 0,
+  vjust = 0,
+  halign = 0.5,
+  valign = 0.5
+)
 }
 \arguments{
 \item{plot}{The plot to place. Can be a ggplot2 plot, an arbitrary grob or gtable,
@@ -22,9 +32,10 @@ or a recorded base-R plot, as in \code{\link[=as_grob]{as_grob()}}.}
 \item{scale}{Scales the grob relative to the rectangle defined by \code{x}, \code{y}, \code{width}, \code{height}. A setting
 of \code{scale = 1} indicates no scaling.}
 
-\item{hjust}{Horizontal justification relative to x.}
+\item{hjust, vjust}{Horizontal and vertical justification relative to x.}
 
-\item{vjust}{Vertical justification relative to y.}
+\item{halign, valign}{Horizontal and vertical justification of the plot inside
+the box.}
 }
 \description{
 Places a plot somewhere onto the drawing canvas. By default, coordinates run from
