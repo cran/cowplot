@@ -1,6 +1,6 @@
-d6bfc1084c79e00bea2767c37feba7b0 *DESCRIPTION
+bfc20881e8fdb5d46434f9c10ab5ab28 *DESCRIPTION
 0eac86b9d51e76bcb0d046be67437a5e *NAMESPACE
-0f76322f4464b82ac353ca204e30072f *NEWS.md
+7a9c3fa7ccba3283ae72180c108d138a *NEWS.md
 11e49917f49aef46af57bad5574d975e *R/add_sub.R
 420bb2f324f23a53c7cb26c0a177c05e *R/align_plots.R
 5ed3a2b11d32470c75d04f9cf9cb4426 *R/as_grob.R
@@ -22,11 +22,11 @@ dc60c05f856b125a2f0cd053b554acbb *R/plot_grid.R
 ccedda74f0b771cdc3769927da01b56c *R/stamp.R
 6ead29d5aa18b700442c35ae775909ab *R/themes.R
 8a4aebda67bd726cdea6afef52f941ed *R/utils_ggplot2.R
-81482130ef1809a5803772a599d8a1a1 *README.md
+d731360fc2ca8389bd5d35fe4f61462e *README.md
 763b34335a065454305e98ba5c15aa55 *build/vignette.rds
 f441ccbb7f199a38892cd37166833368 *inst/doc/introduction.R
 c7e667ea314a9fb26a7ab6f0a4da14ff *inst/doc/introduction.Rmd
-05e6b75140deb3399ede6c9f3a8a770f *inst/doc/introduction.html
+2850e84353e887ef6d81e7cc422b901d *inst/doc/introduction.html
 77f6c3d15312b885e2334e28240f42d1 *inst/extdata/cow.jpg
 9436383860ea15d556b54c15bc85ed0b *inst/extdata/logo.png
 a66a8c0b2802d52411546c243aa58160 *man/add_sub.Rd
@@ -108,7 +108,7 @@ d2cf414aad0f27b1ddf77bea56d2a87c *tests/figs/themes/theme-minimal-hgrid.svg
 46e69000ffde621014c0b04f864ef349 *tests/figs/themes/theme-minimal-vgrid-tiny.svg
 a54f5e889cd2282f6fa5e5135826f0f1 *tests/figs/themes/theme-minimal-vgrid.svg
 c9c854fde22dce7592be15a1ef8c47be *tests/testthat.R
-42b4f793fe5a8c4ccfefd8a9643566fe *tests/testthat/helper-vdiffr.R
+d9a7d5e06f4322eac9e14fddf2d6c974 *tests/testthat/helper-vdiffr.R
 7237b726ceef4ca3e30dceb9b6c6266e *tests/testthat/test_align_plots.R
 b9842c8038bae391fef5fa79a2f4c7b3 *tests/testthat/test_draw_.R
 12df172c9fbd7b7c85da7418196b380d *tests/testthat/test_get_axes.R
